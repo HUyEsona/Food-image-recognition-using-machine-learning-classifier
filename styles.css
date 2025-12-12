@@ -1,0 +1,18 @@
+*{
+    background-color: black;
+      font-family: "Science Gothic", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: n;
+    font-style: normal;
+}
+
+h1 {
+    color: white;
+    text-align: center;
+    padding-top: 100px;
+}   
+
+h3 {
+    color: white;
+    text-align: center;
+}
