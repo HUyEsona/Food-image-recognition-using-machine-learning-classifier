@@ -1,31 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fruit,Vegetable and food predict calories</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Food Recognition</title>
+
+    <!-- Link CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
-<link rel="stylesheet" href="styles.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&family=Science+Gothic:wght@100..900&display=swap" rel="stylesheet">
 <body>
-
-<!-- title of website -->
-<h1>Fruit,Vegetable and food predict calories, protein and give advice on website.</h1>
-<h3>đây là website là nơi bạn có thể đang lên hình ảnh và tìm hiểu về lượng caloríe trong thực phẩm của bạn.</h3>
-<p>Upload an image of a fruit, vegetable, or food item to predict its calorie, protein.</p>
-<!-- upload area -->
-<div class="hero">
-    <label for="input-files" id="drop-area">
-        <input type="file" accept="image/*" id="input-files" hidden>
-        <div id="img-view">
-            <img src="508-icon.png">
-            <p>drag and drop or click here<br>to upload image</p>
-            <span>upload any images from the desktop</span>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="icon-box">🍴</div>
+                <h1 class="title">Food Recognition</h1>
+            </div>
         </div>
-    </label>
-</div>
 
+        <div class="main-layout">
+            <div class="banner">
+                <h2>
+                    Hiểu món ăn của bạn để sống khỏe hơn!
+                </h2>
+            </div>
+
+            <div class="content">
+
+                <!-- Upload -->
+                <div id="uploadSection" onclick="selectImage()">
+                    <div class="upload-icon">Chọn ảnh</div>
+                    <div class="upload-text">Nhấn để chọn ảnh</div>
+                    <input type="file" id="fileInput" accept="image/*" />
+                </div>
+
+                <!-- Preview -->
+                <div id="previewSection" class="card-image hidden">
+                    <img id="previewImage" class="image" alt="Preview" />
+                    <div class="button-row">
+                        <button class="btn btn-success" onclick="analyzeFood()">Phân tích</button>
+                        <button class="btn btn-gray" onclick="reset()">Hủy</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Link JS -->
+    <script src="script.js"></script>
 </body>
 </html>
