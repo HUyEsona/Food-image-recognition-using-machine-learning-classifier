@@ -252,7 +252,7 @@ def get_classes():
     })
 
 if __name__ == '__main__':
-    print("Starting Food Recognition API...")
-    print(f"Using database: {app.config['SQLALCHEMY_DATABASE_URI']}")
+    print("Đang chạy Food Recognition API")
+    print(f"Database: {app.config['SQLALCHEMY_DATABASE_URI']}")
     print("Server: http://localhost:5000")
     app.run(host="0.0.0.0", port=5000)
