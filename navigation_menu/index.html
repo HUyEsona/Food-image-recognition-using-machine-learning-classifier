@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8" />
@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="/CSS/style.css">
 </head>
 <body>
-<!-- ================= HEADER + NAV ================= -->
 <div class="header" id="home">
     <div class="header-content">
         <div class="logo">
@@ -24,17 +23,15 @@
     </div>
 </div>
 
-<!-- ================= MAIN ================= -->
 <div class="container">
     <div class="main-layout">
-        <!-- Banner -->
+        
         <div class="banner">
             <h2 class="banner-title">
                 Hiểu món ăn của bạn để sống khỏe hơn!
             </h2>
         </div>
 
-        <!-- Upload content -->
         <div class="content">
             <div id="uploadSection">
                 <div class="upload-text upload-title">
@@ -71,7 +68,6 @@
     </div>
 </div>
 
-<!-- ================= SCRIPT ================= -->
 <script>
     let currentImage = null;
     let selectedType = null;
@@ -166,7 +162,6 @@
     const currentImageSrc = document.getElementById('previewImage').src;
     
     let resultHTML = `
-        <!-- Hiển thị ảnh đã chọn -->
         <div style="text-align: center; margin-bottom: 20px;">
             <img src="${currentImageSrc}" 
                  style="max-width: 100%; max-height: 400px; object-fit: contain; 
@@ -262,6 +257,334 @@
         .catch(err => {
             console.error('Không thể kết nối đến server:', err);
             console.warn('đảm bảo Flask đang chạy trên cổng 5000');
+        });
+</script>
+</body>
+</html>
+
+ -->
+
+
+ <!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Food Recognition</title>
+    <link rel="stylesheet" href="/__CSS__/style.css">
+</head>
+<body>
+<!-- ================= HEADER + NAV ================= -->
+<div class="header" id="home">
+    <div class="header-content">
+        <div class="logo">
+            <div class="icon-box">🍴</div>
+            <h1 class="title">Food Recognition</h1>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="/" class="active">Trang chủ</a>
+            <a href="/navigation_menu/dashboard.html">Dashboard</a>
+            <a href="/navigation_menu/about.html">Giới thiệu</a>
+            <a href="/navigation_menu/reason.html">Lý do</a>
+            <a href="/navigation_menu/contact.html">Liên hệ</a>
+        </nav>
+    </div>
+</div>
+
+<!-- ================= MAIN ================= -->
+<div class="container">
+    <div class="main-layout">
+        <!-- Banner -->
+        <div class="banner">
+            <h2 class="banner-title">
+                Hiểu món ăn của bạn để sống khỏe hơn!
+            </h2>
+        </div>
+
+        <!-- Upload content -->
+        <div class="content">
+            <div id="uploadSection">
+                <div class="upload-text upload-title">
+                    Chọn loại ảnh bạn muốn phân tích:
+                </div>
+
+                <div class="upload-type">
+                    <div class="upload-option" onclick="selectType(this, 'ingredient')">
+                        <div class="option-title">Thực phẩm</div>
+                    </div>
+                    <div class="upload-option" onclick="selectType(this, 'dish')">
+                        <div class="option-title">Món ăn</div>
+                    </div>
+                </div>
+
+                <div class="upload-btn"
+                     onclick="document.getElementById('fileInput').click()">
+                    Chọn ảnh
+                </div>
+
+                <div class="upload-text">Nhấn để chọn ảnh</div>
+
+                <input type="file" id="fileInput" accept="image/*" />
+            </div>
+
+            <div id="previewSection" class="card-image hidden">
+                <img id="previewImage" class="image" alt="Preview" />
+                <div class="button-row">
+                    <button class="btn btn-success" onclick="analyzeFood()">Phân tích</button>
+                    <button class="btn btn-gray" onclick="reset()">Hủy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+    let currentImage = null;
+    let selectedType = null;
+
+    // Debug log
+    console.log(' Food Recognition Script Loaded');
+
+    function selectType(element, type) {
+        console.log('Selected type:', type);
+        document.querySelectorAll('.upload-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        element.classList.add('selected');
+        selectedType = type;
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        console.log(' File selected:', file?.name);
+        
+        if (file) {
+            if (!selectedType) {
+                alert('Vui lòng chọn loại ảnh trước!');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                currentImage = file;
+                document.getElementById('previewImage').src = event.target.result;
+                document.getElementById('uploadSection').classList.add('hidden');
+                document.getElementById('previewSection').classList.remove('hidden');
+                console.log(' Image preview loaded');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    async function analyzeFood() {
+        console.log(' analyzeFood() called');
+        console.log('   - currentImage:', currentImage?.name);
+        console.log('   - selectedType:', selectedType);
+
+        if (!currentImage || !selectedType) {
+            alert('Có lỗi xảy ra. Vui lòng thử lại!');
+            console.error(' Missing currentImage or selectedType');
+            return;
+        }
+
+        const analyzeBtn = document.querySelector('.btn-success');
+        const originalText = analyzeBtn.textContent;
+        analyzeBtn.textContent = 'Đang phân tích...';
+        analyzeBtn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('image', currentImage);
+            formData.append('type', selectedType);
+
+            console.log(' Sending request to: http://localhost:5000/api/predict');
+
+            const response = await fetch('http://localhost:5000/api/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            console.log('Response status:', response.status);
+
+            const data = await response.json();
+            console.log('Response data:', data);
+
+            if (data.status === 'success') {
+                displayResults(data);
+            } else {
+                alert('Lỗi: ' + (data.message || 'Không thể phân tích ảnh'));
+                console.error('API returned error:', data);
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            alert('Không thể kết nối đến server!\n\nChi tiết lỗi: ' + error.message + '\n\nKiểm tra:\n1. Flask đã chạy chưa?\n2. Đang mở từ http://localhost:5000 ?');
+        } finally {
+            analyzeBtn.textContent = originalText;
+            analyzeBtn.disabled = false;
+        }
+    }
+
+    function displayResults(data) {
+        console.log('Displaying results:', data);
+        
+        const { predictions, model, type, nutrition } = data;
+        
+        // Lấy src của ảnh hiện tại
+        const currentImageSrc = document.getElementById('previewImage').src;
+        
+        let resultHTML = `
+            <!-- Hiển thị ảnh đã chọn -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="${currentImageSrc}" 
+                     style="max-width: 100%; max-height: 400px; object-fit: contain; 
+                            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" 
+                     alt="Selected Image" />
+            </div>
+            
+            <div style="padding: 24px; text-align: left;">
+                <div style="background: linear-gradient(135deg, #F97316 0%, #EF4444 100%); 
+                            padding: 16px; border-radius: 8px; margin-bottom: 20px; color: white;">
+                    <h3 style="margin: 0;">Kết quả phân tích</h3>
+                    <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px;">
+                        Model: ${model} | Loại: ${type === 'dish' ? 'Món ăn' : 'Thực phẩm'}
+                    </p>
+                </div>
+        `;
+        
+        predictions.forEach((pred, index) => {
+            const isTop = index === 0;
+            const bgColor = isTop ? '#EFF6FF' : '#F9FAFB';
+            const borderColor = isTop ? '#3B82F6' : '#E5E7EB';
+            
+            resultHTML += `
+                <div style="margin-bottom: 12px; padding: 16px; 
+                            background: ${bgColor}; 
+                            border: 2px solid ${borderColor};
+                            border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 18px; color: #111827;">
+                                ${index + 1}. ${pred.name}
+                            </div>
+                            <div style="color: #6B7280; font-size: 14px; margin-top: 4px;">
+                                ${isTop ? ' Kết quả tốt nhất' : 'Khả năng khác'}
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 24px; font-weight: bold; color: #059669;">
+                                ${pred.confidence.toFixed(1)}%
+                            </div>
+                            <div style="width: 100px; height: 8px; background: #E5E7EB; 
+                                        border-radius: 4px; margin-top: 4px; overflow: hidden;">
+                                <div style="width: ${pred.confidence}%; height: 100%; 
+                                            background: #059669; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        // Hiển thị thông tin dinh dưỡng
+        if (nutrition && nutrition.calories !== null) {
+            resultHTML += `
+                <div style="background: #F0FDF4; border: 2px solid #10B981; border-radius: 8px; 
+                            padding: 20px; margin-top: 20px;">
+                    <h4 style="color: #065F46; margin: 0 0 15px 0; font-size: 18px;">
+                         Thông tin dinh dưỡng - ${nutrition.name}
+                    </h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="background: white; padding: 12px; border-radius: 6px;">
+                            <div style="color: #6B7280; font-size: 12px;">Calories</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #059669;">
+                                ${nutrition.calories} kcal
+                            </div>
+                        </div>
+                        
+                        ${nutrition.protein ? `
+                        <div style="background: white; padding: 12px; border-radius: 6px;">
+                            <div style="color: #6B7280; font-size: 12px;">Protein</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #059669;">
+                                ${nutrition.protein}g
+                            </div>
+                        </div>` : ''}
+                        
+                        ${nutrition.carbs ? `
+                        <div style="background: white; padding: 12px; border-radius: 6px;">
+                            <div style="color: #6B7280; font-size: 12px;">Carbs</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #059669;">
+                                ${nutrition.carbs}g
+                            </div>
+                        </div>` : ''}
+                        
+                        ${nutrition.fat ? `
+                        <div style="background: white; padding: 12px; border-radius: 6px;">
+                            <div style="color: #6B7280; font-size: 12px;">Fat</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #059669;">
+                                ${nutrition.fat}g
+                            </div>
+                        </div>` : ''}
+                    </div>
+                    
+                    ${nutrition.benefits && nutrition.benefits.length > 0 ? `
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #D1FAE5;">
+                        <div style="font-weight: 600; color: #065F46; margin-bottom: 8px;">
+                             Lợi ích sức khỏe:
+                        </div>
+                        <ul style="margin: 0; padding-left: 20px; color: #047857;">
+                            ${nutrition.benefits.map(b => `<li style="margin-bottom: 5px;">${b}</li>`).join('')}
+                        </ul>
+                    </div>` : ''}
+                </div>
+            `;
+        }
+        
+        resultHTML += `
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #E5E7EB;">
+                    <button class="btn btn-gray" onclick="reset()" 
+                            style="width: 100%; padding: 14px; font-size: 16px;">
+                         Phân tích ảnh khác
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('previewSection').innerHTML = resultHTML;
+    }
+
+    function reset() {
+        console.log(' Reset');
+        currentImage = null;
+        selectedType = null;
+        document.getElementById('fileInput').value = '';
+        document.querySelectorAll('.upload-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        
+        const previewSection = document.getElementById('previewSection');
+        previewSection.innerHTML = `
+            <img id="previewImage" class="image" alt="Preview" />
+            <div class="button-row">
+                <button class="btn btn-success" onclick="analyzeFood()">Phân tích</button>
+                <button class="btn btn-gray" onclick="reset()">Hủy</button>
+            </div>
+        `;
+        
+        document.getElementById('uploadSection').classList.remove('hidden');
+        document.getElementById('previewSection').classList.add('hidden');
+    }
+
+    // Test kết nối server
+    fetch('http://localhost:5000/api/health')
+        .then(res => res.json())
+        .then(data => {
+            console.log(' Server connected:', data);
+        })
+        .catch(err => {
+            console.error('Cannot connect to server:', err);
+            console.warn('Đảm bảo flask đang chạy trên port 5000');
         });
 </script>
 </body>
