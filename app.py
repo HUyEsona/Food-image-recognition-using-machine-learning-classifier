@@ -15,15 +15,13 @@ from nutrition import get_nutrition_with_fallback
 app = Flask(__name__)
 CORS(app)
 
-# ============================================
-# CONFIGURATION
-# ============================================
+
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///food_recognition.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize database
+# khởi tạo database
 init_db(app)
 
 # Đường dẫn
@@ -254,23 +252,7 @@ def get_classes():
     })
 
 if __name__ == '__main__':
-    print("=" * 70)
-    print("Food Recognition API Server - UPGRADED")
-    print("=" * 70)
-    print(f"Base Directory: {BASE_DIR}")
-    print(f"Database: {app.config['SQLALCHEMY_DATABASE_URI']}")
-    print("=" * 70)
-    print("New Features:")
-    print("   - Database + History")
-    print("   - Nutrition Information")
-    print("   - Statistics & Analytics")
-    print("=" * 70)
+    print("Starting Food Recognition API...")
+    print(f"Using database: {app.config['SQLALCHEMY_DATABASE_URI']}")
     print("Server: http://localhost:5000")
-    print("Endpoints:")
-    print("   - GET  /api/health        → Health + Stats")
-    print("   - POST /api/predict       → Predict + Nutrition")
-    print("   - GET  /api/history       → Recent predictions")
-    print("   - GET  /api/statistics    → Dashboard data")
-    print("=" * 70)
-    
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(host="0.0.0.0", port=5000)
