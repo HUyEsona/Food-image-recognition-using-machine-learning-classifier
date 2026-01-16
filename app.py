@@ -21,11 +21,11 @@ ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 JS_DIR = os.path.join(BASE_DIR, 'JS')
 
 try:
-    mobilenet_model = load_model(os.path.join(MODEL_DIR, 'MobileNet_CNN.h5'))
+    mobilenet_model = load_model(os.path.join(MODEL_DIR, 'final_model_mobilenet.h5'))
     resnet_model = load_model(os.path.join(MODEL_DIR, 'final_model.h5'))
-    print("Models loaded successfully!")
+    print("Models load thành công")
 except Exception as e:
-    print(f"Error loading models: {e}")
+    print(f"Lỗi load model: {e}")
     mobilenet_model = None
     resnet_model = None
 
