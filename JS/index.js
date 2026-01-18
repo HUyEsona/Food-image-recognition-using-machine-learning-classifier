@@ -1,5 +1,4 @@
 let anhHienTai = null;
-let loaiDaChon = null;
 
 const API_URL = 'http://localhost:5000';
 
@@ -13,20 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
     kiemTraServer();
 });
 
-// CHỌN LOẠI ẢNH
-function selectType(element, type) {
-    console.log('Đã chọn loại:', type);
-    
-    // Bỏ class selected của tất cả
-    document.querySelectorAll('.upload-option').forEach(opt => {
-        opt.classList.remove('selected');
-    });
-    
-    // Thêm class selected cho cái được chọn
-    element.classList.add('selected');
-    loaiDaChon = type;
-}
-
 // ===== XỬ LÝ CHỌN FILE =====
 function xuLyChonFile(event) {
     const file = event.target.files[0];
@@ -37,13 +22,6 @@ function xuLyChonFile(event) {
     }
     
     console.log(`File: ${file.name} (${file.size} bytes)`);
-    
-    // Kiểm tra đã chọn loại chưa
-    if (!loaiDaChon) {
-        alert('Vui lòng chọn loại ảnh trước!');
-        event.target.value = '';
-        return;
-    }
     
     // Đọc và hiển thị ảnh preview
     const reader = new FileReader();
@@ -66,13 +44,13 @@ function hienThiPreview(srcAnh) {
     document.getElementById('previewSection').classList.remove('hidden');
 }
 
-//PHÂN TÍCH ẢNH
+// PHÂN TÍCH ẢNH
 async function analyzeFood() {
     console.log('Bắt đầu phân tích...');
     
     // Kiểm tra dữ liệu
-    if (!anhHienTai || !loaiDaChon) {
-        console.error('Thiếu dữ liệu:', { anhHienTai, loaiDaChon });
+    if (!anhHienTai) {
+        console.error('Thiếu ảnh:', { anhHienTai });
         alert('Có lỗi xảy ra. Vui lòng thử lại!');
         return;
     }
@@ -88,7 +66,6 @@ async function analyzeFood() {
         // Chuẩn bị dữ liệu gửi lên
         const formData = new FormData();
         formData.append('image', anhHienTai);
-        formData.append('type', loaiDaChon);
         
         console.log(`Gửi request đến: ${API_URL}/api/predict`);
         
@@ -128,24 +105,22 @@ async function analyzeFood() {
     }
 }
 
-//HIỂN THỊ KẾT QUẢ
+// HIỂN THỊ KẾT QUẢ
 function hienThiKetQua(data) {
     console.log('Đang render kết quả...');
     
-    const { predictions, model, type, nutrition } = data;
+    const { predictions, model, nutrition } = data;
     const srcAnhHienTai = document.getElementById('previewImage').src;
     
     // Xây dựng HTML
-    let html = taoHTMLKetQua(srcAnhHienTai, predictions, model, type, nutrition);
+    let html = taoHTMLKetQua(srcAnhHienTai, predictions, model, nutrition);
     
     // Cập nhật DOM
     document.getElementById('previewSection').innerHTML = html;
 }
 
-//TẠO HTML KẾT QUẢ
-function taoHTMLKetQua(srcAnh, predictions, model, type, nutrition) {
-    const loaiText = type === 'dish' ? 'Món ăn' : 'Thực phẩm';
-    
+// TẠO HTML KẾT QUẢ
+function taoHTMLKetQua(srcAnh, predictions, model, nutrition) {
     let html = `
         <!-- Hiển thị ảnh -->
         <div style="text-align: center; margin-bottom: 20px;">
@@ -159,9 +134,9 @@ function taoHTMLKetQua(srcAnh, predictions, model, type, nutrition) {
             <!-- Header -->
             <div style="background: linear-gradient(135deg, #F97316 0%, #EF4444 100%); 
                         padding: 16px; border-radius: 8px; margin-bottom: 20px; color: white;">
-                <h3 style="margin: 0;">Kết quả phân tích</h3>
+                <h3 style="margin: 0;">Kết quả nhận diện món ăn</h3>
                 <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px;">
-                    Model: ${model} | Loại: ${loaiText}
+                    Model: ${model} - Nhận diện món ăn Việt Nam
                 </p>
             </div>
             
@@ -175,7 +150,7 @@ function taoHTMLKetQua(srcAnh, predictions, model, type, nutrition) {
             <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #E5E7EB;">
                 <button class="btn btn-gray" onclick="reset()" 
                         style="width: 100%; padding: 14px; font-size: 16px;">
-                    Phân tích ảnh khác
+                    Phân tích món ăn khác
                 </button>
             </div>
         </div>
@@ -184,7 +159,7 @@ function taoHTMLKetQua(srcAnh, predictions, model, type, nutrition) {
     return html;
 }
 
-//TẠO DANH SÁCH DỰ ĐOÁN
+// TẠO DANH SÁCH DỰ ĐOÁN
 function taoDanhSachDuDoan(predictions) {
     return predictions.map((pred, index) => {
         const laTotNhat = index === 0;
@@ -222,7 +197,7 @@ function taoDanhSachDuDoan(predictions) {
     }).join('');
 }
 
-//TẠO THÔNG TIN DINH DƯỠNG 
+// TẠO THÔNG TIN DINH DƯỠNG 
 function taoThongTinDinhDuong(nutrition) {
     if (!nutrition || nutrition.calories === null) return '';
     
@@ -240,6 +215,12 @@ function taoThongTinDinhDuong(nutrition) {
     }
     if (nutrition.fat) {
         cacO.push({ nhan: 'Fat', giaTri: `${nutrition.fat}g` });
+    }
+    if (nutrition.fiber) {
+        cacO.push({ nhan: 'Fiber', giaTri: `${nutrition.fiber}g` });
+    }
+    if (nutrition.sodium) {
+        cacO.push({ nhan: 'Sodium', giaTri: `${nutrition.sodium}mg` });
     }
     
     const cacOHTML = cacO.map(o => `
@@ -277,21 +258,15 @@ function taoThongTinDinhDuong(nutrition) {
     `;
 }
 
-//RESET VỀ BAN ĐẦU 
+// RESET VỀ BAN ĐẦU 
 function reset() {
     console.log('Đang reset...');
     
     // Xóa dữ liệu
     anhHienTai = null;
-    loaiDaChon = null;
     
     // Reset input file
     document.getElementById('fileInput').value = '';
-    
-    // Bỏ chọn tất cả options
-    document.querySelectorAll('.upload-option').forEach(opt => {
-        opt.classList.remove('selected');
-    });
     
     // Reset HTML preview section
     document.getElementById('previewSection').innerHTML = `

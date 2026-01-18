@@ -1,313 +1,8 @@
-
-
 import requests
 from typing import Dict, Optional
 
-# Database dinh dưỡng cơ bản 
+# Database dinh dưỡng các món ăn Việt Nam (mỗi khẩu phần ~300-400g)
 NUTRITION_DATABASE = {
-    # TRÁI CÂY VÀ RAU CỦ (trên 100g)
-    'apple': {
-        'calories': 52,
-        'protein': 0.3,
-        'carbs': 14,
-        'fat': 0.2,
-        'fiber': 2.4,
-        'vitamin_c': 4.6,
-        'benefits': ['Giàu chất xơ', 'Tốt cho tim mạch', 'Chứa nhiều chất chống oxi hóa'],
-    },
-    'banana': {
-        'calories': 89,
-        'protein': 1.1,
-        'carbs': 23,
-        'fat': 0.3,
-        'fiber': 2.6,
-        'potassium': 358,
-        'benefits': ['Giàu kali', 'Tăng năng lượng', 'Tốt cho tiêu hóa'],
-    },
-    'beetroot': {
-        'calories': 43,
-        'protein': 1.6,
-        'carbs': 10,
-        'fat': 0.2,
-        'fiber': 2.8,
-        'benefits': ['Tăng sức bền', 'Tốt cho gan', 'Giàu chất chống oxi hóa'],
-    },
-    'bell pepper': {
-        'calories': 31,
-        'protein': 1,
-        'carbs': 6,
-        'fat': 0.3,
-        'fiber': 2.1,
-        'benefits': ['Giàu vitamin C', 'Màu sắc đẹp', 'Chống oxi hóa'],
-    },
-    'cabbage': {
-        'calories': 25,
-        'protein': 1.3,
-        'carbs': 6,
-        'fat': 0.1,
-        'fiber': 2.5,
-        'benefits': ['Tốt cho tiêu hóa', 'Chống ung thư', 'Giàu vitamin C'],
-    },
-    'capsicum': {
-        'calories': 31,
-        'protein': 1,
-        'carbs': 6,
-        'fat': 0.3,
-        'fiber': 2.1,
-        'benefits': ['Giàu vitamin C', 'Chống oxi hóa', 'Tốt cho mắt'],
-    },
-    'carrot': {
-        'calories': 41,
-        'protein': 0.9,
-        'carbs': 10,
-        'fat': 0.2,
-        'fiber': 2.8,
-        'vitamin_a': 835,
-        'benefits': ['Tốt cho mắt', 'Giàu beta-carotene', 'Tăng cường miễn dịch'],
-    },
-    'cauliflower': {
-        'calories': 25,
-        'protein': 1.9,
-        'carbs': 5,
-        'fat': 0.3,
-        'fiber': 2,
-        'benefits': ['Ít calo', 'Giàu vitamin C', 'Chống viêm'],
-    },
-    'chilli pepper': {
-        'calories': 40,
-        'protein': 1.9,
-        'carbs': 9,
-        'fat': 0.4,
-        'fiber': 1.5,
-        'benefits': ['Tăng chuyển hóa', 'Giảm đau', 'Chống viêm'],
-    },
-    'corn': {
-        'calories': 86,
-        'protein': 3.3,
-        'carbs': 19,
-        'fat': 1.4,
-        'fiber': 2.7,
-        'benefits': ['Giàu năng lượng', 'Chứa chất xơ', 'Tốt cho tiêu hóa'],
-    },
-    'cucumber': {
-        'calories': 15,
-        'protein': 0.7,
-        'carbs': 3.6,
-        'fat': 0.1,
-        'fiber': 0.5,
-        'vitamin_k': 16.4,
-        'benefits': ['Giàu nước', 'Giúp giải nhiệt', 'Tốt cho da'],
-    },
-    'eggplant': {
-        'calories': 25,
-        'protein': 1,
-        'carbs': 6,
-        'fat': 0.2,
-        'fiber': 3,
-        'benefits': ['Ít calo', 'Giàu chất xơ', 'Chống oxi hóa'],
-    },
-    'garlic': {
-        'calories': 149,
-        'protein': 6.4,
-        'carbs': 33,
-        'fat': 0.5,
-        'fiber': 2.1,
-        'benefits': ['Kháng sinh tự nhiên', 'Tăng miễn dịch', 'Giảm huyết áp'],
-    },
-    'ginger': {
-        'calories': 80,
-        'protein': 1.8,
-        'carbs': 18,
-        'fat': 0.8,
-        'fiber': 2,
-        'benefits': ['Chống buồn nôn', 'Chống viêm', 'Tốt cho tiêu hóa'],
-    },
-    'grapes': {
-        'calories': 69,
-        'protein': 0.7,
-        'carbs': 18,
-        'fat': 0.2,
-        'fiber': 0.9,
-        'benefits': ['Chống oxi hóa', 'Tốt cho tim', 'Chống lão hóa'],
-    },
-    'jalepeno': {
-        'calories': 29,
-        'protein': 0.9,
-        'carbs': 6,
-        'fat': 0.4,
-        'fiber': 2.8,
-        'benefits': ['Tăng trao đổi chất', 'Giàu vitamin C', 'Chống viêm'],
-    },
-    'kiwi': {
-        'calories': 61,
-        'protein': 1.1,
-        'carbs': 15,
-        'fat': 0.5,
-        'fiber': 3,
-        'vitamin_c': 93,
-        'benefits': ['Rất giàu vitamin C', 'Hỗ trợ miễn dịch', 'Tốt cho tiêu hóa'],
-    },
-    'lemon': {
-        'calories': 29,
-        'protein': 1.1,
-        'carbs': 9,
-        'fat': 0.3,
-        'fiber': 2.8,
-        'vitamin_c': 53,
-        'benefits': ['Giàu vitamin C', 'Giải độc', 'Tăng cường miễn dịch'],
-    },
-    'lettuce': {
-        'calories': 15,
-        'protein': 1.4,
-        'carbs': 2.9,
-        'fat': 0.2,
-        'fiber': 1.3,
-        'vitamin_k': 126,
-        'benefits': ['Ít calo', 'Giàu vitamin K', 'Tốt cho xương'],
-    },
-    'mango': {
-        'calories': 60,
-        'protein': 0.8,
-        'carbs': 15,
-        'fat': 0.4,
-        'fiber': 1.6,
-        'vitamin_c': 36.4,
-        'benefits': ['Giàu vitamin A', 'Tốt cho da', 'Tăng miễn dịch'],
-    },
-    'onion': {
-        'calories': 40,
-        'protein': 1.1,
-        'carbs': 9,
-        'fat': 0.1,
-        'fiber': 1.7,
-        'benefits': ['Kháng khuẩn', 'Tốt cho tim', 'Chống viêm'],
-    },
-    'orange': {
-        'calories': 47,
-        'protein': 0.9,
-        'carbs': 12,
-        'fat': 0.1,
-        'fiber': 2.4,
-        'vitamin_c': 53.2,
-        'benefits': ['Giàu vitamin C', 'Tăng cường miễn dịch', 'Chống cảm cúm'],
-    },
-    'paprika': {
-        'calories': 282,
-        'protein': 14.1,
-        'carbs': 54,
-        'fat': 13,
-        'fiber': 34.9,
-        'benefits': ['Giàu chất chống oxi hóa', 'Tăng hương vị', 'Chống viêm'],
-    },
-    'pear': {
-        'calories': 57,
-        'protein': 0.4,
-        'carbs': 15,
-        'fat': 0.1,
-        'fiber': 3.1,
-        'benefits': ['Giàu chất xơ', 'Tốt cho tim', 'Ít calo'],
-    },
-    'peas': {
-        'calories': 81,
-        'protein': 5.4,
-        'carbs': 14,
-        'fat': 0.4,
-        'fiber': 5.7,
-        'benefits': ['Giàu protein thực vật', 'Nhiều chất xơ', 'Tốt cho tiêu hóa'],
-    },
-    'pineapple': {
-        'calories': 50,
-        'protein': 0.5,
-        'carbs': 13,
-        'fat': 0.1,
-        'fiber': 1.4,
-        'benefits': ['Giàu enzyme', 'Hỗ trợ tiêu hóa', 'Chống viêm'],
-    },
-    'pomegranate': {
-        'calories': 83,
-        'protein': 1.7,
-        'carbs': 19,
-        'fat': 1.2,
-        'fiber': 4,
-        'benefits': ['Chống oxi hóa mạnh', 'Tốt cho tim', 'Chống viêm'],
-    },
-    'potato': {
-        'calories': 77,
-        'protein': 2,
-        'carbs': 17,
-        'fat': 0.1,
-        'fiber': 2.1,
-        'potassium': 425,
-        'benefits': ['Giàu năng lượng', 'Chứa nhiều kali', 'Tốt cho tiêu hóa'],
-    },
-    'raddish': {
-        'calories': 16,
-        'protein': 0.7,
-        'carbs': 3.4,
-        'fat': 0.1,
-        'fiber': 1.6,
-        'benefits': ['Ít calo', 'Giàu vitamin C', 'Hỗ trợ tiêu hóa'],
-    },
-    'soy beans': {
-        'calories': 147,
-        'protein': 12.9,
-        'carbs': 11,
-        'fat': 6.8,
-        'fiber': 4.2,
-        'benefits': ['Giàu protein thực vật', 'Tốt cho tim', 'Chứa isoflavone'],
-    },
-    'spinach': {
-        'calories': 23,
-        'protein': 2.9,
-        'carbs': 3.6,
-        'fat': 0.4,
-        'fiber': 2.2,
-        'benefits': ['Giàu sắt', 'Tốt cho máu', 'Nhiều vitamin K'],
-    },
-    'sweetcorn': {
-        'calories': 86,
-        'protein': 3.3,
-        'carbs': 19,
-        'fat': 1.4,
-        'fiber': 2.7,
-        'benefits': ['Giàu năng lượng', 'Ngọt tự nhiên', 'Chứa lutein'],
-    },
-    'sweetpotato': {
-        'calories': 86,
-        'protein': 1.6,
-        'carbs': 20,
-        'fat': 0.1,
-        'fiber': 3,
-        'vitamin_a': 709,
-        'benefits': ['Giàu beta-carotene', 'Chỉ số đường huyết thấp', 'Tốt cho mắt'],
-    },
-    'tomato': {
-        'calories': 18,
-        'protein': 0.9,
-        'carbs': 3.9,
-        'fat': 0.2,
-        'fiber': 1.2,
-        'vitamin_c': 13.7,
-        'benefits': ['Giàu lycopene', 'Chống ung thư', 'Tốt cho da'],
-    },
-    'turnip': {
-        'calories': 28,
-        'protein': 0.9,
-        'carbs': 6,
-        'fat': 0.1,
-        'fiber': 1.8,
-        'benefits': ['Ít calo', 'Giàu vitamin C', 'Tốt cho xương'],
-    },
-    'watermelon': {
-        'calories': 30,
-        'protein': 0.6,
-        'carbs': 8,
-        'fat': 0.2,
-        'fiber': 0.4,
-        'benefits': ['Giàu nước', 'Giải nhiệt', 'Ít calo'],
-    },
-    
-    # Món ăn Việt Nam (mỗi khẩu phần ~300-400g)
     'Pho': {
         'calories': 350,
         'protein': 15,
@@ -581,7 +276,15 @@ NUTRITION_DATABASE = {
 }
 
 def get_nutrition_info(food_name: str) -> Optional[Dict]:
+    """
+    Lấy thông tin dinh dưỡng của món ăn từ database
     
+    Args:
+        food_name: Tên món ăn
+        
+    Returns:
+        Dictionary chứa thông tin dinh dưỡng
+    """
     # Chuẩn hóa tên 
     food_name_normalized = food_name.strip()
 
@@ -607,12 +310,31 @@ def get_nutrition_info(food_name: str) -> Optional[Dict]:
 
 
 def get_nutrition_with_fallback(food_name: str, api_key: str = None, app_id: str = None) -> Dict:
+    """
+    Lấy thông tin dinh dưỡng với fallback
     
+    Args:
+        food_name: Tên món ăn
+        api_key: API key (không sử dụng)
+        app_id: App ID (không sử dụng)
+        
+    Returns:
+        Dictionary chứa thông tin dinh dưỡng
+    """
     return get_nutrition_info(food_name)
 
+
 def format_nutrition_display(nutrition: Dict) -> str:
-    #Format thông tin dinh dưỡng thành chuỗi đẹp
-    html = f"<h4> {nutrition['name']}</h4>"
+    """
+    Format thông tin dinh dưỡng thành chuỗi HTML đẹp
+    
+    Args:
+        nutrition: Dictionary chứa thông tin dinh dưỡng
+        
+    Returns:
+        Chuỗi HTML được format
+    """
+    html = f"<h4>{nutrition['name']}</h4>"
     
     if nutrition.get('calories'):
         html += f"<p><strong>Calories:</strong> {nutrition['calories']} kcal</p>"
@@ -626,10 +348,19 @@ def format_nutrition_display(nutrition: Dict) -> str:
     if nutrition.get('fat'):
         html += f"<p><strong>Fat:</strong> {nutrition['fat']}g</p>"
     
+    if nutrition.get('fiber'):
+        html += f"<p><strong>Fiber:</strong> {nutrition['fiber']}g</p>"
+    
+    if nutrition.get('sodium'):
+        html += f"<p><strong>Sodium:</strong> {nutrition['sodium']}mg</p>"
+    
     if nutrition.get('benefits'):
         html += "<p><strong>Lợi ích:</strong></p><ul>"
         for benefit in nutrition['benefits']:
             html += f"<li>{benefit}</li>"
         html += "</ul>"
+    
+    if nutrition.get('note'):
+        html += f"<p><em>{nutrition['note']}</em></p>"
     
     return html

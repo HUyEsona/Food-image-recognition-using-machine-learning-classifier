@@ -7,7 +7,6 @@ import numpy as np
 from PIL import Image
 import io
 import os
-
 from nutrition import get_nutrition_with_fallback
 
 app = Flask(__name__)
@@ -21,41 +20,22 @@ ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 JS_DIR = os.path.join(BASE_DIR, 'JS')
 
 try:
-    mobilenet_model = load_model(os.path.join(MODEL_DIR, 'final_model_mobilenet.h5'))
     resnet_model = load_model(os.path.join(MODEL_DIR, 'final_model.h5'))
-    print("Models load thành công")
+    print("Model ResNet50 load thành công")
 except Exception as e:
     print(f"Lỗi load model: {e}")
-    mobilenet_model = None
     resnet_model = None
 
-INGREDIENT_CLASSES = [
-    'apple', 'banana', 'beetroot', 'bell pepper', 'cabbage', 'capsicum',
-    'carrot', 'cauliflower', 'chilli pepper', 'corn', 'cucumber', 'eggplant',
-    'garlic', 'ginger', 'grapes', 'jalepeno', 'kiwi', 'lemon', 'lettuce',
-    'mango', 'onion', 'orange', 'paprika', 'pear', 'peas', 'pineapple',
-    'pomegranate', 'potato', 'raddish', 'soy beans', 'spinach', 'sweetcorn',
-    'sweetpotato', 'tomato', 'turnip', 'watermelon',
+FOOD_CLASSES = [
+    'Banh beo', 'Banh bot loc', 'Banh can', 'Banh canh', 'Banh chung',
+    'Banh cuon', 'Banh duc', 'Banh gio', 'Banh khot', 'Banh mi',
+    'Banh pia', 'Banh tet', 'Banh trang nuong', 'Banh xeo', 'Bun bo Hue',
+    'Bun dau mam tom', 'Bun mam', 'Bun rieu', 'Bun thit nuong', 'Ca kho to',
+    'Canh chua', 'Cao lau', 'Chao long', 'Com tam', 'Goi cuon',
+    'Hu tieu', 'Mi quang', 'Nem chua', 'Pho', 'Xoi xeo'
 ]
 
-DISH_CLASSES = [
-    'Banh beo', 'Banh bot loc', 'Banh can', 'Banh canh', 'Banh chung', 'Banh cuon', 
-    'Banh duc', 'Banh gio', 'Banh khot', 'Banh mi', 'Banh pia', 'Banh tet', 'Banh trang nuong',
-      'Banh xeo', 'Bun bo Hue', 'Bun dau mam tom', 'Bun mam', 'Bun rieu', 'Bun thit nuong', 'Ca kho to',
-        'Canh chua', 'Cao lau', 'Chao long', 'Com tam', 'Goi cuon', 'Hu tieu', 'Mi quang', 'Nem chua', 'Pho', 'Xoi xeo'
-]
-
-
-def preprocess_image_mobilenet(img):
-    if img.mode != 'RGB':
-        img = img.convert('RGB')
-    img = img.resize((224, 224))
-    img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array = img_array / 127.5 - 1.0
-    return img_array
-
-def preprocess_image_resnet(img):
+def preprocess_image(img):
     if img.mode != 'RGB':
         img = img.convert('RGB')
     img = img.resize((224, 224))
@@ -63,8 +43,6 @@ def preprocess_image_resnet(img):
     img_array = np.expand_dims(img_array, axis=0)
     img_array = preprocess_input(img_array)
     return img_array
-
-
 
 @app.route('/')
 def index():
@@ -86,16 +64,13 @@ def serve_assets(filename):
 def serve_navigation(filename):
     return send_from_directory(STATIC_DIR, filename)
 
-
-
 @app.route('/api/health')
 def health():
     return jsonify({
         'status': 'healthy',
-        'mobilenet_loaded': mobilenet_model is not None,
-        'resnet_loaded': resnet_model is not None,
-        'ingredient_classes': len(INGREDIENT_CLASSES),
-        'dish_classes': len(DISH_CLASSES),
+        'model_loaded': resnet_model is not None,
+        'model_name': 'ResNet50',
+        'total_classes': len(FOOD_CLASSES),
     })
 
 @app.route('/api/predict', methods=['POST'])
@@ -105,39 +80,27 @@ def predict():
             return jsonify({'error': 'No image file provided'}), 400
         
         file = request.files['image']
-        food_type = request.form.get('type', 'dish')
         
         if file.filename == '':
             return jsonify({'error': 'No file selected'}), 400
         
+        if resnet_model is None:
+            return jsonify({'error': 'ResNet model not loaded'}), 500
+        
         img_bytes = file.read()
         img = Image.open(io.BytesIO(img_bytes))
         
-        if food_type == 'ingredient':
-            if mobilenet_model is None:
-                return jsonify({'error': 'MobileNet model not loaded'}), 500
-            
-            processed_img = preprocess_image_mobilenet(img)
-            predictions = mobilenet_model.predict(processed_img, verbose=0)
-            classes = INGREDIENT_CLASSES
-            model_name = 'MobileNetV2'
-        else:
-            if resnet_model is None:
-                return jsonify({'error': 'ResNet model not loaded'}), 500
-            
-            processed_img = preprocess_image_resnet(img)
-            predictions = resnet_model.predict(processed_img, verbose=0)
-            classes = DISH_CLASSES
-            model_name = 'ResNet50'
+        processed_img = preprocess_image(img)
+        predictions = resnet_model.predict(processed_img, verbose=0)
         
         top_indices = np.argsort(predictions[0])[-3:][::-1]
-        results = []
         
+        results = []
         for idx in top_indices:
-            if idx < len(classes):
+            if idx < len(FOOD_CLASSES):
                 confidence = float(predictions[0][idx] * 100)
                 results.append({
-                    'name': classes[idx],
+                    'name': FOOD_CLASSES[idx],
                     'confidence': confidence,
                     'index': int(idx)
                 })
@@ -147,13 +110,12 @@ def predict():
         
         return jsonify({
             'status': 'success',
-            'type': food_type,
-            'model': model_name,
+            'model': 'ResNet50',
             'predictions': results,
             'nutrition': nutrition_info,
-            'total_classes': len(classes)
+            'total_classes': len(FOOD_CLASSES)
         })
-        
+    
     except Exception as e:
         import traceback
         print(f"Error: {e}")
@@ -166,15 +128,12 @@ def predict():
 @app.route('/api/classes')
 def get_classes():
     return jsonify({
-        'ingredient_classes': INGREDIENT_CLASSES,
-        'dish_classes': DISH_CLASSES,
-        'counts': {
-            'ingredients': len(INGREDIENT_CLASSES),
-            'dishes': len(DISH_CLASSES)
-        }
+        'food_classes': FOOD_CLASSES,
+        'total_classes': len(FOOD_CLASSES),
+        'model': 'ResNet50'
     })
 
 if __name__ == '__main__':
-    print("Đang chạy Food Recognition API")
+    print("Đang chạy Food Recognition API với ResNet50")
     print("Server: http://localhost:5000")
     app.run(host="0.0.0.0", port=5000)
