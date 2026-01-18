@@ -1,5 +1,7 @@
 # Food-image-recognition-using-machine-learning-classifier
-đồ án thực tập tốt nghiệp của DL22
+Đồ án thực tập tốt nghiệp của nhóm 7 - DL22
+
+
 
 -Dataset được nén dưới dạng  được sử dụng trong dự án:
 được lấy từ  https://www.kaggle.com/datasets/quandang/vietnamese-foods
